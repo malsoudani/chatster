@@ -6,7 +6,7 @@ type client struct {
 	// socket is the websocket for the client
 	socket *websocket.Conn
 	// send is the channel on which the messages are sent
-	msgToSend chan []btye
+	sendMsg chan []btye
 	// room is the room this client is chatting in
 	room *room
 }
@@ -18,13 +18,13 @@ func (c *client) read() {
 		if err != nil {
 			return
 		}
-		c.room.forward <- msg
+		c.room.forwardMsg <- msg
 	}
 }
 
 func (c *client) write() {
 	defer c.socket.Close()
-	for msg := range c.msgToSend {
+	for msg := range c.sendMsg {
 		err := c.socket.WriteMessage(websocket.TextMessage, msg)
 		if err != nil {
 			return
