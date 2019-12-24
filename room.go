@@ -14,3 +14,20 @@ type room struct {
 	// map of the current clients of this room
 	clients map[*client]bool
 }
+
+func (r *room) run() {
+	for {
+		select {
+		case client := <-r.join:
+			r.clients[client] = true
+		case client := <-r.leave:
+			// to leave we delete the client from the client list and we close their message sending channel
+			delete(r.clients, client)
+			close(client.sendMsg)
+		case msg := <-r.forwardMsg:
+			for client := range r.clients {
+				client.sendMsg <- msg
+			}
+		}
+	}
+}
