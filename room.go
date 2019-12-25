@@ -22,6 +22,15 @@ type room struct {
 	clients map[*client]bool
 }
 
+func newRoom() *room {
+	return &room{
+		forwardMsg: make(chan []byte),
+		join:       make(chan *client),
+		leave:      make(chan *client),
+		clients:    make(map[*client]bool),
+	}
+}
+
 const (
 	socketBufferSize  = 1024
 	messageBufferSize = 256
