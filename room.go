@@ -30,20 +30,20 @@ const (
 var upgrader = &websocket.Upgrader{ReadBufferSize: socketBufferSize, WriteBufferSize: messageBufferSize}
 
 func (r *room) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	socket, err := upgrader.Upgrade(w, req, nil)
+	socket, err := upgrader.Upgrade(w, req, nil) // upgrades the request to allow a regular http call from the browser to use sockets
 	if err != nil {
 		log.Fatal("room server error: ", err)
 		return
 	}
-	client := &client{
+	client := &client{ // we create a client for the room
 		socket:  socket,
 		sendMsg: make(chan []byte, messageBufferSize),
 		room:    r,
 	}
-	r.join <- client
-	defer func() { r.leave <- client }()
-	go client.write()
-	client.read()
+	r.join <- client                     // adding the client to the join channel
+	defer func() { r.leave <- client }() // after the server has stopped (the client leaves the webpage), then close the webpage
+	go client.write()                    // running the write action of the client on the thread of its own
+	client.read()                        // reading on this thread which is acting as the the blocking mechanism on the main thread, and it makes sense to keep the connection alive on reading while handling writing on a thread of its own
 }
 
 func (r *room) run() {
