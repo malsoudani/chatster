@@ -6,7 +6,7 @@ type client struct {
 	// socket is the websocket for the client
 	socket *websocket.Conn
 	// send is the channel on which the messages are sent
-	sendMsg chan []btye
+	sendMsg chan []byte
 	// room is the room this client is chatting in
 	room *room
 }
